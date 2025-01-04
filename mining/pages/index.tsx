@@ -69,8 +69,11 @@ const LockIcon = ({ className }: { className: string }) => (
   </svg>
 );
 
+// 1. Add a type for valid tabs
+type TabType = 'tap' | 'mine' | 'friends' | 'earn' | 'airdrop';
+
 export default function Game() {
-  const [activeTab, setActiveTab] = useState('tap');
+  const [activeTab, setActiveTab] = useState<TabType>('tap');
   const [coins, setCoins] = useState(0);
   const [energy, setEnergy] = useState(1000);
   const [earnPerTap, setEarnPerTap] = useState(2);
@@ -776,7 +779,7 @@ export default function Game() {
     setClicks([]);
   }, [activeTab]);
 
-  const TAB_ICONS = {
+  const TAB_ICONS: Record<TabType, (active: boolean) => JSX.Element> = {
     tap: (active: boolean) => (
       <Image 
         src="/tap.png" 
@@ -1011,17 +1014,17 @@ export default function Game() {
 
         {/* Navigation */}
         <div className="fixed bottom-0 left-1/2 transform -translate-x-1/2 w-[calc(100%-2rem)] max-w-xl bg-[#272a2f] flex justify-around items-center z-50 rounded-3xl text-xs">
-          {['tap', 'mine', 'friends', 'earn', 'airdrop'].map(tab => (
-            <div
+          {['tap', 'mine', 'friends', 'earn', 'airdrop'].map((tab: TabType) => (
+            <button
               key={tab}
-              className={`text-center w-1/5 p-1 cursor-pointer`}
+              className="flex-1 py-4"
               onClick={() => setActiveTab(tab)}
             >
               {TAB_ICONS[tab](activeTab === tab)}
               <p className={`mt-1 capitalize ${activeTab === tab ? 'text-[#ffffff] opacity-100' : 'text-[#85827d] opacity-30'}`}>
                 {tab}
               </p>
-            </div>
+            </button>
           ))}
         </div>
 
