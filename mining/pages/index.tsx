@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import Image from 'next/image';
 
 interface Click {
   id: number;
@@ -9,9 +10,11 @@ interface Click {
 
 interface OverlayContent {
   title: string;
-  url: string;
+  url?: string;
   reward: number;
   task?: string;
+  type?: 'daily';
+  currentDay?: number;
 }
 
 type OverlayType = 'boost' | 'task' | 'daily' | 'booster' | 'miner' | null;
@@ -746,39 +749,49 @@ export default function Game() {
 
   const TAB_ICONS = {
     tap: (active: boolean) => (
-      <img 
+      <Image 
         src="/tap.png" 
         alt="tap" 
-        className={`w-9 h-9 mx-auto ${active ? 'opacity-100' : 'opacity-30'}`}
+        width={36}
+        height={36}
+        className={`mx-auto ${active ? 'opacity-100' : 'opacity-30'}`}
       />
     ),
     mine: (active: boolean) => (
-      <img 
+      <Image 
         src="/mine.png" 
         alt="mine" 
-        className={`w-6 h-6 mx-auto ${active ? 'opacity-100' : 'opacity-30'}`}
+        width={24}
+        height={24}
+        className={`mx-auto ${active ? 'opacity-100' : 'opacity-30'}`}
       />
     ),
     friends: (active: boolean) => (
-      <img 
+      <Image 
         src="/friends.png" 
         alt="friends" 
-        className={`w-6 h-6 mx-auto ${active ? 'opacity-100' : 'opacity-30'}`}
+        width={24}
+        height={24}
+        className={`mx-auto ${active ? 'opacity-100' : 'opacity-30'}`}
       />
     ),
     earn: (active: boolean) => (
-      <img 
+      <Image 
         src="/earn.png" 
         alt="earn" 
-        className={`w-6 h-6 mx-auto ${active ? 'opacity-100' : 'opacity-30'}`}
+        width={24}
+        height={24}
+        className={`mx-auto ${active ? 'opacity-100' : 'opacity-30'}`}
       />
     ),
     airdrop: (active: boolean) => (
       <div className="w-9 h-9 mx-auto overflow-hidden">
-        <img 
+        <Image 
           src="/DNA.png" 
           alt="airdrop" 
-          className={`w-9 h-9 object-cover scale-150 ${active ? 'opacity-100' : 'opacity-30'}`}
+          width={36}
+          height={36}
+          className={`object-cover scale-150 ${active ? 'opacity-100' : 'opacity-30'}`}
         />
       </div>
     )
