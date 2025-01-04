@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, ReactElement } from 'react';
 import Image from 'next/image';
 
 interface Click {
@@ -27,10 +27,9 @@ type OverlayContent = TaskOverlayContent | DailyOverlayContent;
 
 type OverlayType = 'boost' | 'task' | 'daily' | 'booster' | 'miner' | null;
 
-interface DailyRewardContent {
+interface DailyRewardContent extends BaseOverlayContent {
   type: 'daily';
   currentDay: number;
-  reward: number;
 }
 
 interface BoosterOverlayContent {
@@ -71,6 +70,11 @@ const LockIcon = ({ className }: { className: string }) => (
 
 // 1. Add a type for valid tabs
 type TabType = 'tap' | 'mine' | 'friends' | 'earn' | 'airdrop';
+
+// Add type guard function
+const isTaskContent = (content: OverlayContent | DailyRewardContent): content is TaskOverlayContent => {
+  return 'task' in content;
+};
 
 export default function Game() {
   const [activeTab, setActiveTab] = useState<TabType>('tap');
@@ -275,6 +279,7 @@ export default function Game() {
     setOverlayType('daily');
     setOverlayContent({
       type: 'daily',
+      title: 'Daily Reward',
       currentDay: dailyProgress,
       reward: 1000 * dailyProgress
     });
@@ -282,15 +287,16 @@ export default function Game() {
 
   const handleTaskCompletion = (task: string) => {
     setIsTaskLoading(true);
-    const content = overlayContent as TaskOverlayContent;
-    window.open(content?.url, '_blank');
-    
-    setTimeout(() => {
-      setCompletedTasks(prev => ({ ...prev, [task]: true }));
-      setCoins(prev => Math.floor(prev + (content?.reward || 0)));
-      setIsTaskLoading(false);
-      setOverlayType(null);
-    }, 6000);
+    if (overlayContent && isTaskContent(overlayContent)) {
+      window.open(overlayContent.url, '_blank');
+      
+      setTimeout(() => {
+        setCompletedTasks(prev => ({ ...prev, [task]: true }));
+        setCoins(prev => Math.floor(prev + overlayContent.reward));
+        setIsTaskLoading(false);
+        setOverlayType(null);
+      }, 6000);
+    }
   };
 
   const canClaimDaily = () => {
@@ -779,7 +785,7 @@ export default function Game() {
     setClicks([]);
   }, [activeTab]);
 
-  const TAB_ICONS: Record<TabType, (active: boolean) => JSX.Element> = {
+  const TAB_ICONS: Record<TabType, (active: boolean) => ReactElement> = {
     tap: (active: boolean) => (
       <Image 
         src="/tap.png" 
@@ -1014,7 +1020,7 @@ export default function Game() {
 
         {/* Navigation */}
         <div className="fixed bottom-0 left-1/2 transform -translate-x-1/2 w-[calc(100%-2rem)] max-w-xl bg-[#272a2f] flex justify-around items-center z-50 rounded-3xl text-xs">
-          {['tap', 'mine', 'friends', 'earn', 'airdrop'].map((tab: TabType) => (
+          {(['tap', 'mine', 'friends', 'earn', 'airdrop'] as TabType[]).map((tab) => (
             <button
               key={tab}
               className="flex-1 py-4"
@@ -1139,21 +1145,19 @@ export default function Game() {
                     </h3>
 
                     {/* Button */}
-                  <button
-                      onClick={() => handleTaskCompletion(overlayContent?.task)}
-                      disabled={isTaskLoading}
+                    <button
+                      onClick={() => {
+                        if (overlayContent && isTaskContent(overlayContent)) {
+                          handleTaskCompletion(overlayContent.task);
+                        }
+                      }}
+                      disabled={Boolean(isTaskLoading)}
                       className={`w-full bg-[#4c6fff] text-white py-3 rounded-lg font-medium mb-3 ${
                         isTaskLoading ? 'opacity-50' : ''
                       }`}
-                  >
-                    {isTaskLoading ? (
-                      'Verifying...'
-                    ) : overlayContent?.title === 'Follow Twitter' ? (
-                      'Follow'
-                    ) : (
-                      'Join'
-                    )}
-                  </button>
+                    >
+                      {isTaskLoading ? 'Verifying...' : overlayContent?.title === 'Follow Twitter' ? 'Follow' : 'Join'}
+                    </button>
                     
                     {/* Reward */}
                     <div className="flex items-center gap-2 mb-8">
@@ -1225,7 +1229,7 @@ export default function Game() {
                             <div className="flex items-center gap-3">
                               <Image 
                                 src={key === 'multitap' ? '/boosttap.png' : '/energy+.png'} 
-                                alt={booster.name} 
+                                alt={booster.name || 'Booster'}  // Add default value
                                 className="w-6 h-6"
                               />
                               <div>
@@ -1258,7 +1262,7 @@ export default function Game() {
                       <Image 
                         src={boosterContent?.key === 'multitap' ? '/boosttap.png' : 
                             boosterContent?.key === 'energyBoost' ? '/energy.png' : '/energy+.png'} 
-                        alt={boosterContent?.name} 
+                        alt={boosterContent?.name || 'Booster'}  // Add default value
                         className="w-[160px] h-[160px]"
                       />
                     </div>
@@ -1298,17 +1302,17 @@ export default function Game() {
                           setCoins(prev => Math.floor(prev - boosterContent!.cost));
                           setPurchasedBoosters(prev => ({ ...prev, [boosterContent!.key]: true }));
                           if (boosterContent!.key === 'multitap') {
-                            setEarnPerTap(prev => prev * BOOSTERS.multitap.multiplier);
+                            setEarnPerTap(prev => prev * (BOOSTERS.multitap.multiplier || 1));
                           }
                           setOverlayType(null);
                           setActiveTab('tap');  // Return to tap tab
                         }
                       }}
-                      disabled={
+                      disabled={Boolean(
                         boosterContent?.key === 'energyBoost' 
                           ? energyCharges <= 0 || (lastChargeClaim && Date.now() < lastChargeClaim + 60 * 60 * 1000)
                           : !boosterContent || purchasedBoosters[boosterContent.key] || coins < boosterContent.cost
-                      }
+                      )}
                       className={`w-full py-4 rounded-lg text-xl font-bold ${
                         boosterContent?.key === 'energyBoost'
                           ? (energyCharges > 0 && (!lastChargeClaim || Date.now() >= lastChargeClaim + 60 * 60 * 1000))
@@ -1335,7 +1339,7 @@ export default function Game() {
                     {/* Image */}
                     <div className="mb-8">
                       <Image 
-                        src={minerContent?.image}
+                        src={minerContent?.image || '/default-miner.png'}  // Provide fallback
                         alt="Miner" 
                         className="w-[160px] h-[160px]"
                       />
