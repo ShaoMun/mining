@@ -8,14 +8,22 @@ interface Click {
   amount: number;
 }
 
-interface OverlayContent {
+interface BaseOverlayContent {
   title: string;
-  url?: string;
   reward: number;
-  task?: string;
-  type?: 'daily';
-  currentDay?: number;
 }
+
+interface TaskOverlayContent extends BaseOverlayContent {
+  url: string;
+  task: string;
+}
+
+interface DailyOverlayContent extends BaseOverlayContent {
+  type: 'daily';
+  currentDay: number;
+}
+
+type OverlayContent = TaskOverlayContent | DailyOverlayContent;
 
 type OverlayType = 'boost' | 'task' | 'daily' | 'booster' | 'miner' | null;
 
@@ -271,11 +279,12 @@ export default function Game() {
 
   const handleTaskCompletion = (task: string) => {
     setIsTaskLoading(true);
-    window.open(overlayContent?.url, '_blank');
+    const content = overlayContent as TaskOverlayContent;
+    window.open(content?.url, '_blank');
     
     setTimeout(() => {
       setCompletedTasks(prev => ({ ...prev, [task]: true }));
-      setCoins(prev => Math.floor(prev + (overlayContent?.reward || 0)));
+      setCoins(prev => Math.floor(prev + (content?.reward || 0)));
       setIsTaskLoading(false);
       setOverlayType(null);
     }, 6000);
@@ -344,7 +353,13 @@ export default function Game() {
           <div className="bg-[#272a2f] p-3 rounded-lg text-center">
             <p className="text-xs text-[#85827d]">Earn/Tap</p>
             <div className="flex items-center justify-center gap-1">
-              <img src="/coin.png" alt="Coin" className="w-5 h-5" />
+              <Image 
+                src="/coin.png" 
+                alt="Coin" 
+                width={20}
+                height={20}
+                className="w-5 h-5"
+              />
               <p className="text-sm font-bold">{earnPerTap}</p>
             </div>
           </div>
@@ -355,7 +370,13 @@ export default function Game() {
           <div className="bg-[#272a2f] p-3 rounded-lg text-center">
             <p className="text-xs text-[#85827d]">Profit/Hour</p>
             <div className="flex items-center justify-center gap-1">
-              <img src="/coin.png" alt="Coin" className="w-5 h-5" />
+              <Image 
+                src="/coin.png" 
+                alt="Coin" 
+                width={20}
+                height={20}
+                className="w-5 h-5"
+              />
               <p className="text-sm font-bold">{profitPerHour}</p>
             </div>
           </div>
@@ -364,7 +385,13 @@ export default function Game() {
         {/* Balance Display */}
         <div className="text-center mb-3">
           <div className="flex items-center justify-center gap-2">
-            <img src="/coin.png" alt="Coin" className="w-16 h-16" />
+            <Image 
+              src="/coin.png" 
+              alt="Coin" 
+              width={64}
+              height={64}
+              className="w-16 h-16"
+            />
             <p className="text-4xl font-bold text-[#f3ba2f]">
               {coins.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </p>
@@ -392,13 +419,13 @@ export default function Game() {
           className="w-[280px] h-[280px] rounded-full bg-[#15171a] flex items-center justify-center cursor-pointer"
           onClick={handleClick}
         >
-          <div className="w-[280px] h-[280px] rounded-full bg-[#15171a] flex items-center justify-center">
-            <img 
-              src="/DNA.png" 
-              alt="DNA"
-              className="w-[320px] h-[320px] object-contain transition-transform duration-200 active:animate-[click-pulse_200ms_ease-in-out]"
-            />
-          </div>
+          <Image 
+            src="/DNA.png" 
+            alt="DNA"
+            width={320}
+            height={320}
+            className="w-[320px] h-[320px] object-contain transition-transform duration-200 active:animate-[click-pulse_200ms_ease-in-out]"
+          />
         </div>
 
         {/* Floating points animation */}
@@ -422,7 +449,7 @@ export default function Game() {
           {/* Energy Section - Left aligned */}
           <div className="flex items-center">
             <div className="w-12 h-12 flex items-center justify-center">
-              <img src="/energy.png" alt="Energy" className="w-8 h-9" />
+              <Image src="/energy.png" alt="Energy" width={36} height={36} className="w-8 h-9" />
             </div>
             <p className="text-base">
               {energy}/{1000 + (purchasedBoosters.energyLimit ? 5 : 0)}
@@ -436,7 +463,7 @@ export default function Game() {
             }}
             className="flex items-center py-3 text-white rounded-xl font-semibold"
           >
-            <img src="/boost.png" alt="Boost" className="w-11 h-9" />
+            <Image src="/boost.png" alt="Boost" width={36} height={36} className="w-11 h-9" />
             Boost
           </button>
         </div>
@@ -459,7 +486,7 @@ export default function Game() {
           <div className="absolute inset-0 bg-[#f3ba2f]/30 rounded-full blur-lg"></div>
           
           {/* Coin image - removed animation */}
-          <img 
+          <Image 
             src="/coin.png" 
             alt="Coin" 
             className="w-full h-full relative z-10"
@@ -476,12 +503,12 @@ export default function Game() {
         >
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg flex items-center justify-center">
-              <img src="/calendar.png" alt="Daily" className="w-12 h-11" />
+              <Image src="/calendar.png" alt="Daily" width={48} height={44} className="w-12 h-11" />
             </div>
             <div>
               <span className="block">Daily reward</span>
               <div className="flex items-center mt-1">
-                <img src="/coin.png" alt="Coin" className="w-4 h-4 mr-1" />
+                <Image src="/coin.png" alt="Coin" width={16} height={16} className="w-4 h-4 mr-1" />
                 <span className="text-[#f3ba2f]">+511,500</span>
               </div>
             </div>
@@ -500,12 +527,12 @@ export default function Game() {
         >
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-[#1d2025] rounded-lg flex items-center justify-center">
-                <img src="/telegram.png" alt="Telegram" className="w-10 h-10" />
+                <Image src="/telegram.png" alt="Telegram" width={40} height={40} className="w-10 h-10" />
               </div>
               <div>
                 <span className="block">Join our TG channel</span>
                 <div className="flex items-center mt-1">
-                  <img src="/coin.png" alt="Coin" className="w-4 h-4 mr-1" />
+                  <Image src="/coin.png" alt="Coin" width={16} height={16} className="w-4 h-4 mr-1" />
                   <span className="text-[#f3ba2f]">+5,000</span>
                 </div>
               </div>
@@ -521,12 +548,12 @@ export default function Game() {
         >
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-[#1d2025] rounded-lg flex items-center justify-center">
-                <img src="/twitter.png" alt="X" className="w-9 h-9" />
+                <Image src="/twitter.png" alt="X" width={36} height={36} className="w-9 h-9" />
               </div>
               <div>
                 <span className="block">Follow our X account</span>
                 <div className="flex items-center mt-1">
-                  <img src="/coin.png" alt="Coin" className="w-4 h-4 mr-1" />
+                  <Image src="/coin.png" alt="Coin" width={16} height={16} className="w-4 h-4 mr-1" />
                   <span className="text-[#f3ba2f]">+5,000</span>
                 </div>
               </div>
@@ -555,7 +582,7 @@ export default function Game() {
               <div className="flex justify-between mb-4">
                 {/* Upper Left - Image */}
                 <div className="w-12 h-12 bg-[#1d2025] rounded-lg flex items-center justify-center relative">
-                  <img src={miner.image} alt={miner.title} className="w-8 h-8" />
+                  <Image src={miner.image} alt={miner.title} width={32} height={32} className="w-8 h-8" />
                   {isLocked && (
                     <div className="absolute inset-0 bg-black/50 rounded-lg flex items-center justify-center">
                       <LockIcon className="w-5 h-5 text-white/80" />
@@ -568,7 +595,7 @@ export default function Game() {
                   <h3 className="font-bold mb-1">{miner.title}</h3>
                   <p className="text-[#85827d] text-sm mb-1">Profit per hour</p>
                   <div className="flex items-center gap-1 justify-end">
-                    <img src="/coin.png" alt="Coin" className="w-4 h-4" />
+                    <Image src="/coin.png" alt="Coin" width={16} height={16} className="w-4 h-4" />
                     <span className="text-[#f3ba2f]">+{miner.profitPerHour}</span>
                   </div>
                 </div>
@@ -583,7 +610,7 @@ export default function Game() {
 
                 {/* Lower Right - Cost */}
                 <div className="flex items-center gap-1">
-                  <img src="/coin.png" alt="Coin" className="w-4 h-4" />
+                  <Image src="/coin.png" alt="Coin" width={16} height={16} className="w-4 h-4" />
                   <span className={`font-bold ${isLocked ? 'text-[#85827d]' : 'text-[#f3ba2f]'}`}>
                     {miner.cost}
                   </span>
@@ -603,9 +630,11 @@ export default function Game() {
         <div className="relative w-[210px] h-[210px] mb-8">
           <div className="absolute inset-0 bg-[#f3ba2f]/20 rounded-full blur-xl"></div>
           <div className="relative w-[210px] h-[210px] rounded-full flex items-center justify-center">
-            <img 
+            <Image 
               src="/DNA.png" 
               alt="DNA"
+              width={210}
+              height={210}
               className="w-[210px] h-[210px] object-contain"
             />
           </div>
@@ -823,12 +852,12 @@ export default function Game() {
               {/* Invite Option */}
               <div className="bg-[#272a2f] p-4 rounded-lg flex items-center gap-4">
                 <div className="rounded-lg flex items-center justify-center">
-                  <img src="/gift.png" alt="Gift" className="w-12 h-9" />
+                  <Image src="/gift.png" alt="Gift" width={48} height={36} className="w-12 h-9" />
                 </div>
                 <div className="flex-1">
                   <p className="font-medium text-white">Invite a friend</p>
                   <div className="flex items-center gap-1 mt-1">
-                    <img src="/coin.png" alt="Coin" className="w-5 h-5" />
+                    <Image src="/coin.png" alt="Coin" width={20} height={20} className="w-5 h-5" />
                     <span className="text-[#f3ba2f]">+5,000</span>
                     <span className="text-[#85827d]">for you and your friend</span>
                   </div>
@@ -848,11 +877,11 @@ export default function Game() {
                   {/* Novice */}
                   <div className="bg-[#272a2f] p-3 rounded-lg grid grid-cols-2 items-center">
                     <div className="flex items-center gap-2">
-                      <img src="/novice.png" alt="Novice" className="w-8 h-8" />
+                      <Image src="/novice.png" alt="Novice" width={32} height={32} className="w-8 h-8" />
                       <span className="text-white">Novice</span>
                     </div>
                     <div className="flex items-center gap-1 justify-end">
-                      <img src="/coin.png" alt="Coin" className="w-4 h-4" />
+                      <Image src="/coin.png" alt="Coin" width={16} height={16} className="w-4 h-4" />
                       <span className="text-[#f3ba2f]">+10,000</span>
                     </div>
                   </div>
@@ -860,11 +889,11 @@ export default function Game() {
                   {/* Intermediate */}
                   <div className="bg-[#272a2f] p-3 rounded-lg grid grid-cols-2 items-center">
                     <div className="flex items-center gap-2">
-                      <img src="/intermediate.png" alt="Intermediate" className="w-8 h-8" />
+                      <Image src="/intermediate.png" alt="Intermediate" width={32} height={32} className="w-8 h-8" />
                       <span className="text-white">Intermediate</span>
                     </div>
                     <div className="flex items-center gap-1 justify-end">
-                      <img src="/coin.png" alt="Coin" className="w-4 h-4" />
+                      <Image src="/coin.png" alt="Coin" width={16} height={16} className="w-4 h-4" />
                       <span className="text-[#f3ba2f]">+20,000</span>
                     </div>
                   </div>
@@ -872,11 +901,11 @@ export default function Game() {
                   {/* Advanced */}
                   <div className="bg-[#272a2f] p-3 rounded-lg grid grid-cols-2 items-center">
                     <div className="flex items-center gap-2">
-                      <img src="/advanced.png" alt="Advanced" className="w-8 h-8" />
+                      <Image src="/advanced.png" alt="Advanced" width={32} height={32} className="w-8 h-8" />
                       <span className="text-white">Advanced</span>
                     </div>
                     <div className="flex items-center gap-1 justify-end">
-                      <img src="/coin.png" alt="Coin" className="w-4 h-4" />
+                      <Image src="/coin.png" alt="Coin" width={16} height={16} className="w-4 h-4" />
                       <span className="text-[#f3ba2f]">+30,000</span>
                     </div>
                   </div>
@@ -884,11 +913,11 @@ export default function Game() {
                   {/* Expert */}
                   <div className="bg-[#272a2f] p-3 rounded-lg grid grid-cols-2 items-center">
                     <div className="flex items-center gap-2">
-                      <img src="/expert.png" alt="Expert" className="w-8 h-8" />
+                      <Image src="/expert.png" alt="Expert" width={32} height={32} className="w-8 h-8" />
                       <span className="text-white">Expert</span>
                     </div>
                     <div className="flex items-center gap-1 justify-end">
-                      <img src="/coin.png" alt="Coin" className="w-4 h-4" />
+                      <Image src="/coin.png" alt="Coin" width={16} height={16} className="w-4 h-4" />
                       <span className="text-[#f3ba2f]">+40,000</span>
                     </div>
                   </div>
@@ -896,11 +925,11 @@ export default function Game() {
                   {/* Master */}
                   <div className="bg-[#272a2f] p-3 rounded-lg grid grid-cols-2 items-center">
                     <div className="flex items-center gap-2">
-                      <img src="/master.png" alt="Master" className="w-8 h-8" />
+                      <Image src="/master.png" alt="Master" width={32} height={32} className="w-8 h-8" />
                       <span className="text-white">Master</span>
                     </div>
                     <div className="flex items-center gap-1 justify-end">
-                      <img src="/coin.png" alt="Coin" className="w-4 h-4" />
+                      <Image src="/coin.png" alt="Coin" width={16} height={16} className="w-4 h-4" />
                       <span className="text-[#f3ba2f]">+50,000</span>
                     </div>
                   </div>
@@ -908,11 +937,11 @@ export default function Game() {
                   {/* Elite */}
                   <div className="bg-[#272a2f] p-3 rounded-lg grid grid-cols-2 items-center">
                     <div className="flex items-center gap-2">
-                      <img src="/elite.png" alt="Elite" className="w-8 h-8" />
+                      <Image src="/elite.png" alt="Elite" width={32} height={32} className="w-8 h-8" />
                       <span className="text-white">Elite</span>
                     </div>
                     <div className="flex items-center gap-1 justify-end">
-                      <img src="/coin.png" alt="Coin" className="w-4 h-4" />
+                      <Image src="/coin.png" alt="Coin" width={16} height={16} className="w-4 h-4" />
                       <span className="text-[#f3ba2f]">+60,000</span>
                     </div>
                   </div>
@@ -920,11 +949,11 @@ export default function Game() {
                   {/* Champion */}
                   <div className="bg-[#272a2f] p-3 rounded-lg grid grid-cols-2 items-center">
                     <div className="flex items-center gap-2">
-                      <img src="/champion.png" alt="Champion" className="w-8 h-8" />
+                      <Image src="/champion.png" alt="Champion" width={32} height={32} className="w-8 h-8" />
                       <span className="text-white">Champion</span>
                     </div>
                     <div className="flex items-center gap-1 justify-end">
-                      <img src="/coin.png" alt="Coin" className="w-4 h-4" />
+                      <Image src="/coin.png" alt="Coin" width={16} height={16} className="w-4 h-4" />
                       <span className="text-[#f3ba2f]">+80,000</span>
                     </div>
                   </div>
@@ -932,11 +961,11 @@ export default function Game() {
                   {/* Legend */}
                   <div className="bg-[#272a2f] p-3 rounded-lg grid grid-cols-2 items-center">
                     <div className="flex items-center gap-2">
-                      <img src="/legend.png" alt="Legend" className="w-8 h-8" />
+                      <Image src="/legend.png" alt="Legend" width={32} height={32} className="w-8 h-8" />
                       <span className="text-white">Legend</span>
                     </div>
                     <div className="flex items-center gap-1 justify-end">
-                      <img src="/coin.png" alt="Coin" className="w-4 h-4" />
+                      <Image src="/coin.png" alt="Coin" width={16} height={16} className="w-4 h-4" />
                       <span className="text-[#f3ba2f]">+100,000</span>
                     </div>
                   </div>
@@ -944,11 +973,11 @@ export default function Game() {
                   {/* Supreme */}
                   <div className="bg-[#272a2f] p-3 rounded-lg grid grid-cols-2 items-center">
                     <div className="flex items-center gap-2">
-                      <img src="/supreme.png" alt="Supreme" className="w-8 h-8" />
+                      <Image src="/supreme.png" alt="Supreme" width={32} height={32} className="w-8 h-8" />
                       <span className="text-white">Supreme</span>
                     </div>
                     <div className="flex items-center gap-1 justify-end">
-                      <img src="/coin.png" alt="Coin" className="w-4 h-4" />
+                      <Image src="/coin.png" alt="Coin" width={16} height={16} className="w-4 h-4" />
                       <span className="text-[#f3ba2f]">+150,000</span>
                     </div>
                   </div>
@@ -1018,7 +1047,7 @@ export default function Game() {
 
                       {/* Calendar Icon - Adjusted margin */}
                       <div className="mb-4">
-                        <img 
+                        <Image 
                           src="/calendar.png" 
                           alt="Calendar" 
                           className="w-[120px] h-[120px]"
@@ -1047,7 +1076,7 @@ export default function Game() {
                             }`}
                           >
                             <span className="text-sm font-bold">Day {i + 1}</span>
-                            <img src="/coin.png" alt="Coin" className="w-8 h-8" />
+                            <Image src="/coin.png" alt="Coin" width={32} height={32} className="w-8 h-8" />
                             <span className="text-xs">{(500 * Math.pow(2, i)).toLocaleString()}</span>
                           </div>
                         ))}
@@ -1087,13 +1116,13 @@ export default function Game() {
                     {/* Logo */}
                     <div className="mb-6">
                       {overlayContent?.title === 'Follow Twitter' ? (
-                        <img 
+                        <Image 
                           src="/twitter.png" 
                           alt="X Logo" 
                           style={{ width: '120px', height: '120px' }}
                         />
                       ) : (
-                        <img 
+                        <Image 
                           src="/telegram.png" 
                           alt="Telegram Logo" 
                           style={{ width: '120px', height: '120px' }}
@@ -1125,7 +1154,7 @@ export default function Game() {
                     
                     {/* Reward */}
                     <div className="flex items-center gap-2 mb-8">
-                      <img src="/coin.png" alt="Coin" className="w-6 h-6" />
+                      <Image src="/coin.png" alt="Coin" className="w-6 h-6" />
                       <span className="text-xl text-[#f3ba2f]">+{overlayContent?.reward.toLocaleString()}</span>
                     </div>
                   </div>
@@ -1156,7 +1185,7 @@ export default function Game() {
                           }}
                         >
                           <div className="flex items-center gap-3">
-                            <img src="/energy.png" alt="Energy" className="w-6 h-6" />
+                            <Image src="/energy.png" alt="Energy" className="w-6 h-6" />
                             <div>
                               <span>Full energy</span>
                               <div className="text-sm text-[#85827d] mt-1">
@@ -1191,7 +1220,7 @@ export default function Game() {
                             onClick={() => handleBoosterClick(key, booster)}
                           >
                             <div className="flex items-center gap-3">
-                              <img 
+                              <Image 
                                 src={key === 'multitap' ? '/boosttap.png' : '/energy+.png'} 
                                 alt={booster.name} 
                                 className="w-6 h-6"
@@ -1199,7 +1228,7 @@ export default function Game() {
                               <div>
                                 <p>{booster.name}</p>
                                 <div className="flex items-center gap-1">
-                                  <img src="/coin.png" alt="Coin" className="w-4 h-4" />
+                                  <Image src="/coin.png" alt="Coin" className="w-4 h-4" />
                                   <span className="text-[#f3ba2f]">{booster.cost.toLocaleString()}</span>
                                   <span className="text-[#85827d]"> for {key === 'multitap' ? '7M' : '6M'}</span>
                                 </div>
@@ -1223,7 +1252,7 @@ export default function Game() {
 
                     {/* Icon */}
                     <div className="mb-8">
-                      <img 
+                      <Image 
                         src={boosterContent?.key === 'multitap' ? '/boosttap.png' : 
                             boosterContent?.key === 'energyBoost' ? '/energy.png' : '/energy+.png'} 
                         alt={boosterContent?.name} 
@@ -1244,7 +1273,7 @@ export default function Game() {
 
                     {/* Cost */}
                     <div className="flex items-center gap-3 mb-10">
-                      <img src="/coin.png" alt="Coin" className="w-9 h-9" />
+                      <Image src="/coin.png" alt="Coin" className="w-9 h-9" />
                       <span className="text-2xl text-[#f3ba2f]">{boosterContent?.cost.toLocaleString()}</span>
                     </div>
 
@@ -1302,7 +1331,7 @@ export default function Game() {
 
                     {/* Image */}
                     <div className="mb-8">
-                      <img 
+                      <Image 
                         src={minerContent?.image}
                         alt="Miner" 
                         className="w-[160px] h-[160px]"
@@ -1320,13 +1349,13 @@ export default function Game() {
                     {/* Profit per hour */}
                     <div className="flex items-center gap-2 mb-4">
                       <span className="text-[#85827d]">Profit per hour</span>
-                      <img src="/coin.png" alt="Coin" className="w-5 h-5" />
+                      <Image src="/coin.png" alt="Coin" className="w-5 h-5" />
                       <span className="text-[#f3ba2f]">+{minerContent?.profitPerHour}</span>
                     </div>
 
                     {/* Cost */}
                     <div className="flex items-center gap-2 mb-10">
-                      <img src="/coin.png" alt="Coin" className="w-6 h-6" />
+                      <Image src="/coin.png" alt="Coin" className="w-6 h-6" />
                       <span className="text-2xl text-[#f3ba2f]">{minerContent?.cost}</span>
                     </div>
 
