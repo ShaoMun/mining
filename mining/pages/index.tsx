@@ -66,7 +66,6 @@ export default function Game() {
   const [profitPerHour, setProfitPerHour] = useState(100);
   const [level, setLevel] = useState(1);
   const [clicks, setClicks] = useState<Click[]>([]);
-  const [boosterCount, setBoosterCount] = useState(5);
   const [purchasedBoosters, setPurchasedBoosters] = useState<Record<string, boolean>>({});
   const [completedTasks, setCompletedTasks] = useState<Record<string, boolean>>({});
   const [dailyProgress, setDailyProgress] = useState(1);
