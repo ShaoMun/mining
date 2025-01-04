@@ -66,7 +66,6 @@ export default function Game() {
   const [profitPerHour, setProfitPerHour] = useState(100);
   const [level, setLevel] = useState(1);
   const [clicks, setClicks] = useState<Click[]>([]);
-  const [lastBoosterClaim, setLastBoosterClaim] = useState(null);
   const [boosterCount, setBoosterCount] = useState(5);
   const [purchasedBoosters, setPurchasedBoosters] = useState<Record<string, boolean>>({});
   const [completedTasks, setCompletedTasks] = useState<Record<string, boolean>>({});
@@ -74,7 +73,6 @@ export default function Game() {
   const [overlayType, setOverlayType] = useState<OverlayType>(null);
   const [overlayContent, setOverlayContent] = useState<OverlayContent | DailyRewardContent | null>(null);
   const [boostCooldown, setBoostCooldown] = useState<number | null>(null);
-  const [dailyRewardContent, setDailyRewardContent] = useState<DailyRewardContent | null>(null);
   const [lastClaimDate, setLastClaimDate] = useState<string | null>(null);
   const [energyCharges, setEnergyCharges] = useState(6);
   const [lastChargeClaim, setLastChargeClaim] = useState<number | null>(null);
@@ -82,7 +80,7 @@ export default function Game() {
   const [isTaskLoading, setIsTaskLoading] = useState(false);
   const [minerContent, setMinerContent] = useState<MinerOverlayContent | null>(null);
 
-  const LEVEL_THRESHOLDS = {
+  const LEVEL_THRESHOLDS: Record<number, number> = {
     1: 1000,        // Beginner
     2: 5000,        // Novice
     3: 20000,       // Intermediate
@@ -95,7 +93,14 @@ export default function Game() {
     10: 5000000     // Supreme
   };
 
-  const BOOSTERS = {
+  interface Booster {
+    name: string;
+    cost: number;
+    multiplier?: number;
+    bonus?: number;
+  }
+
+  const BOOSTERS: Record<string, Booster> = {
     multitap: { name: 'MultiTap', cost: 1000, multiplier: 2 },
     energyLimit: { name: 'Energy+', cost: 2000, bonus: 5 }
   };
@@ -329,7 +334,7 @@ export default function Game() {
     });
   };
 
-  const handleMinerClick = (miner: any) => {
+  const handleMinerClick = (miner: MiningItem) => {
     setOverlayType('miner');
     setMinerContent({
       title: miner.title,
@@ -900,7 +905,7 @@ export default function Game() {
     if (currentThreshold && coins >= currentThreshold) {
       setLevel(prev => prev + 1);
     }
-  }, [coins, level]);
+  }, [coins, level, LEVEL_THRESHOLDS]);
 
   useEffect(() => {
     let lastUpdate = Date.now();
