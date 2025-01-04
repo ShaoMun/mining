@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 
 interface Click {
   id: number;
@@ -80,7 +80,7 @@ export default function Game() {
   const [isTaskLoading, setIsTaskLoading] = useState(false);
   const [minerContent, setMinerContent] = useState<MinerOverlayContent | null>(null);
 
-  const LEVEL_THRESHOLDS: Record<number, number> = {
+  const LEVEL_THRESHOLDS = useMemo(() => ({
     1: 1000,        // Beginner
     2: 5000,        // Novice
     3: 20000,       // Intermediate
@@ -91,7 +91,7 @@ export default function Game() {
     8: 1000000,     // Champion
     9: 2000000,     // Legend
     10: 5000000     // Supreme
-  };
+  } as Record<number, number>), []);
 
   interface Booster {
     name: string;
@@ -103,12 +103,6 @@ export default function Game() {
   const BOOSTERS: Record<string, Booster> = {
     multitap: { name: 'MultiTap', cost: 1000, multiplier: 2 },
     energyLimit: { name: 'Energy+', cost: 2000, bonus: 5 }
-  };
-
-  const MINERS = {
-    basic: { name: 'Basic Miner', cost: 1000, bonus: 100 },
-    advanced: { name: 'Advanced Miner', cost: 5000, bonus: 500 },
-    pro: { name: 'Pro Miner', cost: 20000, bonus: 2000 }
   };
 
   const MINING_ITEMS: MiningItem[] = [
@@ -242,28 +236,6 @@ export default function Game() {
         amount: earnPerTap
       }]);
     }
-  };
-
-  const handleBoosterClaim = () => {
-    if (boosterCount <= 0) return;
-    
-    const now = Date.now();
-    if (!boostCooldown || now >= boostCooldown) {
-      setEnergy(1000 + (purchasedBoosters.energyLimit ? 5 : 0));
-      setBoosterCount(prev => prev - 1);
-      setBoostCooldown(now + 60 * 60 * 1000);
-    }
-  };
-
-  const getBoostTimeRemaining = () => {
-    if (!boostCooldown) return 'Ready';
-    const now = Date.now();
-    if (now >= boostCooldown) return 'Ready';
-    
-    const remaining = boostCooldown - now;
-    const minutes = Math.floor(remaining / (60 * 1000));
-    const seconds = Math.floor((remaining % (60 * 1000)) / 1000);
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
 
   const handleTaskClick = (taskType: 'telegram' | 'twitter') => {
@@ -666,173 +638,6 @@ export default function Game() {
             <span className="text-[#85827d] text-lg">Token Launch Benefits</span>
           </div>
         </div>
-      </div>
-    </div>
-  );
-
-  const renderFriendsTab = () => (
-    <div className="flex flex-col h-full p-4 space-y-6">
-      {/* Header */}
-      <div className="text-center">
-        <h2 className="text-2xl font-bold mb-2">Invite friends!</h2>
-        <p className="text-[#85827d]">You and your friend will receive bonuses</p>
-      </div>
-
-      {/* Invite Option */}
-      <div className="bg-[#272a2f] p-4 rounded-lg flex items-center gap-4">
-        <div className="rounded-lg flex items-center justify-center">
-          <img src="/gift.png" alt="Gift" className="w-12 h-9" />
-        </div>
-        <div className="flex-1">
-          <p className="font-medium text-white">Invite a friend</p>
-          <div className="flex items-center gap-1 mt-1">
-            <img src="/coin.png" alt="Coin" className="w-4 h-4" />
-            <span className="text-[#f3ba2f]">+5,000</span>
-            <span className="text-[#85827d]">for you and your friend</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Level Bonus Table */}
-      <div>
-        <h3 className="text-lg font-bold text-white mb-3">Bonus for leveling up</h3>
-        <div className="space-y-2">
-          {/* Table Header */}
-          <div className="grid grid-cols-2 items-center px-3 mb-1">
-            <span className="text-sm text-[#85827d]">Level</span>
-            <span className="text-sm text-[#85827d] text-right">For friend</span>
-          </div>
-
-          {/* Novice */}
-          <div className="bg-[#272a2f] p-3 rounded-lg grid grid-cols-2 items-center">
-            <div className="flex items-center gap-2">
-              <img src="/novice.png" alt="Novice" className="w-8 h-8" />
-              <span className="text-white">Novice</span>
-            </div>
-            <div className="flex items-center gap-1 justify-end">
-              <img src="/coin.png" alt="Coin" className="w-4 h-4" />
-              <span className="text-[#f3ba2f]">+10,000</span>
-            </div>
-          </div>
-
-          {/* Intermediate */}
-          <div className="bg-[#272a2f] p-3 rounded-lg grid grid-cols-2 items-center">
-            <div className="flex items-center gap-2">
-              <img src="/intermediate.png" alt="Intermediate" className="w-8 h-8" />
-              <span className="text-white">Intermediate</span>
-            </div>
-            <div className="flex items-center gap-1 justify-end">
-              <img src="/coin.png" alt="Coin" className="w-4 h-4" />
-              <span className="text-[#f3ba2f]">+20,000</span>
-            </div>
-          </div>
-
-          {/* Advanced */}
-          <div className="bg-[#272a2f] p-3 rounded-lg grid grid-cols-2 items-center">
-            <div className="flex items-center gap-2">
-              <img src="/advanced.png" alt="Advanced" className="w-8 h-8" />
-              <span className="text-white">Advanced</span>
-            </div>
-            <div className="flex items-center gap-1 justify-end">
-              <img src="/coin.png" alt="Coin" className="w-4 h-4" />
-              <span className="text-[#f3ba2f]">+30,000</span>
-            </div>
-          </div>
-
-          {/* Expert */}
-          <div className="bg-[#272a2f] p-3 rounded-lg grid grid-cols-2 items-center">
-            <div className="flex items-center gap-2">
-              <img src="/expert.png" alt="Expert" className="w-8 h-8" />
-              <span className="text-white">Expert</span>
-            </div>
-            <div className="flex items-center gap-1 justify-end">
-              <img src="/coin.png" alt="Coin" className="w-4 h-4" />
-              <span className="text-[#f3ba2f]">+40,000</span>
-            </div>
-          </div>
-
-          {/* Master */}
-          <div className="bg-[#272a2f] p-3 rounded-lg grid grid-cols-2 items-center">
-            <div className="flex items-center gap-2">
-              <img src="/master.png" alt="Master" className="w-8 h-8" />
-              <span className="text-white">Master</span>
-            </div>
-            <div className="flex items-center gap-1 justify-end">
-              <img src="/coin.png" alt="Coin" className="w-4 h-4" />
-              <span className="text-[#f3ba2f]">+50,000</span>
-            </div>
-          </div>
-
-          {/* Elite */}
-          <div className="bg-[#272a2f] p-3 rounded-lg grid grid-cols-2 items-center">
-            <div className="flex items-center gap-2">
-              <img src="/elite.png" alt="Elite" className="w-8 h-8" />
-              <span className="text-white">Elite</span>
-            </div>
-            <div className="flex items-center gap-1 justify-end">
-              <img src="/coin.png" alt="Coin" className="w-4 h-4" />
-              <span className="text-[#f3ba2f]">+60,000</span>
-            </div>
-          </div>
-
-          {/* Champion */}
-          <div className="bg-[#272a2f] p-3 rounded-lg grid grid-cols-2 items-center">
-            <div className="flex items-center gap-2">
-              <img src="/champion.png" alt="Champion" className="w-8 h-8" />
-              <span className="text-white">Champion</span>
-            </div>
-            <div className="flex items-center gap-1 justify-end">
-              <img src="/coin.png" alt="Coin" className="w-4 h-4" />
-              <span className="text-[#f3ba2f]">+80,000</span>
-            </div>
-          </div>
-
-          {/* Legend */}
-          <div className="bg-[#272a2f] p-3 rounded-lg grid grid-cols-2 items-center">
-            <div className="flex items-center gap-2">
-              <img src="/legend.png" alt="Legend" className="w-8 h-8" />
-              <span className="text-white">Legend</span>
-            </div>
-            <div className="flex items-center gap-1 justify-end">
-              <img src="/coin.png" alt="Coin" className="w-4 h-4" />
-              <span className="text-[#f3ba2f]">+100,000</span>
-            </div>
-          </div>
-
-          {/* Supreme */}
-          <div className="bg-[#272a2f] p-3 rounded-lg grid grid-cols-2 items-center">
-            <div className="flex items-center gap-2">
-              <img src="/supreme.png" alt="Supreme" className="w-8 h-8" />
-              <span className="text-white">Supreme</span>
-            </div>
-            <div className="flex items-center gap-1 justify-end">
-              <img src="/coin.png" alt="Coin" className="w-4 h-4" />
-              <span className="text-[#f3ba2f]">+150,000</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Invite Buttons */}
-      <div className="flex gap-3 mt-auto">
-        <button className="flex-1 bg-[#4c6fff] text-white py-3 rounded-lg font-medium">
-          Invite a friend
-        </button>
-        <button className="w-12 h-12 bg-[#4c6fff] rounded-lg flex items-center justify-center">
-          <svg 
-            className="w-5 h-5 text-[#ffffff]" 
-            fill="none" 
-            stroke="currentColor" 
-            viewBox="0 0 24 24"
-          >
-            <path 
-              strokeLinecap="round" 
-              strokeLinejoin="round" 
-              strokeWidth={2} 
-              d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" 
-            />
-          </svg>
-        </button>
       </div>
     </div>
   );
